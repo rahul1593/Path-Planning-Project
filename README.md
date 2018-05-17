@@ -116,3 +116,5 @@ Following snippet shows the point generation:
                 next_y_vals.push_back(y_point);
             }
 ```
+
+So, finally the car is able to drive at least 4.32 miles without incident or exceeding maximum limit of jerk or velocity.
