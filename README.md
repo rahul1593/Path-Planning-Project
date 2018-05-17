@@ -10,7 +10,6 @@ Path generation model consists of two parts:
 * Creating a trajectory
 
 ### Deciding Lane to Drive in
-
 If no vehicle is present in current driving lane, the car accelerates to maximum velocity, which is close to 50MPH. The acceleration is kept low and constant to minimise jerk. If a vehicle is detected within 30m range in front of the car, `setTargetLane` function is called to change the lane if possible, otherwise the car slows down in the current lane itself.
 
 Following is the code for the same:
@@ -88,5 +87,32 @@ void setTargetLane(vector<vector<double>> sensor_fusion, double car_s, int prev_
 ```
 
 ### Creating a trajectory
+For creating a trajectory, (x,y) coordinates for waypoints are creating for the path ahead of the car by using the corresponding (s,d) Frenet coordinates which are spaced by 30m. Now, we use spline function to generate points for the smooth trajectory. Points are spaced according to the desired velocity and acceleration.
 
+Number of points is calculated by using the formula: N = target_dist / (0.02*ref_v/2.24)
 
+Following snippet shows the point generation:
+
+```c
+// fill up the rest of path planner after filling it with previous points, here we always output 50 points
+            for(int i = 1; i < 51 - previous_path_x.size(); i++){
+                double N = (target_dist / (0.02*ref_v/2.24));
+                double x_point = x_add_on + (target_x / N);
+                double y_point = s(x_point);
+                
+                x_add_on = x_point;
+                
+                double x_ref = x_point;
+                double y_ref = y_point;
+                
+                //rotate back to normal after rotating earlier
+                x_point = (x_ref * cos(ref_yaw)) - (y_ref * sin(ref_yaw));
+                y_point = (x_ref * sin(ref_yaw)) + (y_ref * cos(ref_yaw));
+                
+                x_point += ref_x;
+                y_point += ref_y;
+                
+                next_x_vals.push_back(x_point);
+                next_y_vals.push_back(y_point);
+            }
+```
